@@ -52,6 +52,16 @@ for (const entry of chapterDirectories.sort((a, b) => a.name.localeCompare(b.nam
     },
   });
 
+  let scripts = '';
+  if (entry.name === '01-what-should-a-network-do') {
+    const [chapterScript, wasm] = await Promise.all([
+      readFile(join(chapters, entry.name, 'chapter.js'), 'utf8'),
+      readFile(join(project, 'tools/chapter-link-wasm/chapter_link_wasm.wasm')),
+    ]);
+    scripts = `  <script type="application/octet-stream" id="chapter-link-wasm">${wasm.toString('base64')}</script>
+  <script>${chapterScript.replace(/<\/script/gi, '<\\/script')}</script>\n`;
+  }
+
   await writeFile(destination, `<!doctype html>
 <html lang="en">
 <head>
@@ -65,7 +75,7 @@ for (const entry of chapterDirectories.sort((a, b) => a.name.localeCompare(b.nam
     <article>
 ${body}    </article>
   </main>
-</body>
+${scripts}</body>
 </html>
 `);
   console.log(`Built ${relative(project, destination)}`);

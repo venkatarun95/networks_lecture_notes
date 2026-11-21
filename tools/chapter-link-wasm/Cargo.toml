@@ -1,0 +1,16 @@
+[package]
+name = "chapter-link-wasm"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+competitive_net_sim = { path = "../../network_arena", default-features = false }
+
+[profile.release]
+lto = true
+opt-level = "s"
+strip = true
