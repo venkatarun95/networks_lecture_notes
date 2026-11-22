@@ -1,4 +1,4 @@
-# # 2. The Architecture of the Internet
+# 2. The Architecture of the Internet
 
 In Chapter 1, a request from the campus library passed through several routers before reaching the server that held the cat video. The routers were connected by links, but how much did the request depend on the particular technology used for each one? Suppose we replaced a link between two routers with something entirely different. How different could it be before we would have to change the software on the laptop or the server?
 

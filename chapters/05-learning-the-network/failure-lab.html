@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Routing failure lab</title>
+  <style>
+    body { margin: 0; color: #173334; background: #fff; font: 1rem/1.55 system-ui, sans-serif; }
+    main { width: min(70rem, calc(100% - 2rem)); margin: 2rem auto 4rem; }
+    h1, h2 { line-height: 1.2; }
+    p { max-width: 70ch; }
+    img { display: block; width: min(100%, 42rem); height: auto; margin: 1.5rem 0; }
+    form { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: end; }
+    .field { display: grid; gap: .25rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    button, select, input { font: inherit; accent-color: #147c70; }
+    button, select { border: 1px solid #6f8986; border-radius: .35rem; padding: .5rem .75rem; }
+    button { cursor: pointer; color: inherit; background: #f1f6f5; }
+    button[type="submit"] { background: #12675f; color: white; border-color: #12675f; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; margin: 1rem 0; }
+    caption { text-align: left; font-weight: 650; padding-bottom: .5rem; }
+    th, td { vertical-align: top; text-align: left; padding: .55rem .75rem; border-bottom: 1px solid #d4e0de; }
+    th { background: #f1f6f5; }
+    td:first-child, th:first-child { white-space: nowrap; }
+    a { color: #12675f; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Routing failure lab</h1>
+    <p>S9 sends to a host attached to S2. S0–S2 fails at 3,000 ms with no direct notification. Predict the first forwarding change, which next hops will differ at the end, and when S9 can deliver again.</p>
+    <img src="figures/failure-grid.svg" alt="Twelve-switch grid. The direct link between S0 and S2 fails. S9 is the source and S2 is the destination switch.">
+    <form id="parameters">
+      <label class="field" for="misses">Missed HELLOs before declaring failure
+        <select id="misses">
+          <option>1</option>
+          <option>2</option>
+          <option selected>3</option>
+          <option>4</option>
+          <option>5</option>
+          <option>6</option>
+        </select>
+      </label>
+      <div class="field">
+        <label for="phase">Time from last HELLO to cut</label>
+        <input id="phase" type="range" min="0" max="49" value="20">
+        <output id="phase-value" for="phase">20 ms</output>
+      </div>
+      <div class="actions">
+        <button type="submit">Run failure</button>
+        <button type="button" id="run-sweep">Sweep cut timing</button>
+      </div>
+    </form>
+    <noscript><p>Enable JavaScript to run the local simulation.</p></noscript>
+    <section id="results" hidden>
+      <h2>Failure trace</h2>
+      <p id="summary" role="status"></p>
+      <p>Each path is a snapshot of installed next hops at that time. It shows where a probe would go if the tables were held fixed for its journey.</p>
+      <div class="table-wrap" role="region" aria-label="Failure trace" tabindex="0">
+        <table>
+          <thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Changed next hops</th><th scope="col">S9 forwarding path</th></tr></thead>
+          <tbody id="trace"></tbody>
+        </table>
+      </div>
+    </section>
+    <section id="sweep" hidden>
+      <h2>Cut timing sweep</h2>
+      <p>Each row runs the same model with the cut at a different point in the HELLO cycle. A cut exactly on a HELLO tick happens just after that HELLO is received.</p>
+      <table>
+        <thead><tr><th scope="col">Cut time from start of sweep</th><th scope="col">Delay to first forwarding change</th></tr></thead>
+        <tbody id="sweep-rows"></tbody>
+      </table>
+    </section>
+    <h2>Model assumptions</h2>
+    <p>Both endpoints check for a HELLO every 50 ms and have the same phase. Each link-state report takes 10 ms per hop and is delivered over live links without loss. A router removes the bidirectional edge after hearing either endpoint’s report and installs its new next hop immediately. All links cost one and ties go to the lowest-numbered next hop.</p>
+    <p><a href="failure-lab.js" download>Download the editable model</a> or use the <a href="../../network_arena/README.md">full course simulator</a> to try your own routing program on other topologies.</p>
+  </main>
+  <script src="failure-lab.js"></script>
+</body>
+</html>

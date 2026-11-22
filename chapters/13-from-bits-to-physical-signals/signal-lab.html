@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal sampling lab</title>
+<style>
+body { font: 1rem/1.55 system-ui,sans-serif; color: #1d2938; background: #f6f8fb; margin: 0; }
+main { max-width: 56rem; margin: auto; padding: 2rem 1rem 4rem; }
+section { margin-block: 2rem; } label { display: inline-flex; gap: .5rem; flex-wrap: wrap; padding: .5rem; background: #e7eff7; } select { font: inherit; }
+div { overflow-x: auto; } table { width: 100%; border-collapse: collapse; margin-top: .7rem; } th, td { text-align: left; padding: .3rem; border-bottom: 1px solid #d4dfe8; }
+</style>
+</head>
+<body><main>
+<h1>What does the receiver sample?</h1>
+<section>
+<h2>Clock drift</h2>
+<p>Voltage is exact. Predict the first slot that a slow receiver misses.</p>
+<label>Sample interval <input id="period" type="range" min=".9" max="1.22" step=".01" value="1.12"><output id="clock-value" for="period"></output></label>
+<div><table aria-label="Clock samples"><thead><tr><th scope="col">Sample</th><th scope="col">Time</th><th scope="col">Expected bit</th><th scope="col">Observed bit</th><th scope="col">Decision</th></tr></thead><tbody id="clock"></tbody></table></div>
+</section>
+<section>
+<h2>Voltage decisions</h2>
+<p>Timing is exact. Predict whether a disturbance can cross the midpoint between levels.</p>
+<label>Levels <select id="levels"><option>2</option><option selected>4</option><option>8</option><option>16</option></select></label>
+<label>Noise bound <input id="noise" type="range" min="0" max="1.2" step=".01" value=".4"><output id="noise-value" for="noise"></output></label>
+<div><table aria-label="Voltage samples"><thead><tr><th scope="col">Sent level</th><th scope="col">Nominal V</th><th scope="col">Measured V</th><th scope="col">Decoded level</th><th scope="col">Decision</th></tr></thead><tbody id="voltage"></tbody></table></div>
+</section>
+</main><script defer src="signal-lab.js"></script></body>
+</html>

@@ -6,7 +6,7 @@ build:
 	node tools/build-book.mjs
 
 view: build
-	open build/01-what-should-a-network-do.html
+	open build/index.html
 
 wasm:
 	cargo build --manifest-path $(LINK_WASM)/Cargo.toml --locked --offline --release --target wasm32-unknown-unknown --target-dir build/link-wasm

@@ -1,0 +1,10 @@
+# Repair timing lab
+
+Both designs get 66 transmission slots, spaced 2 ms apart. In each run, each slot carries an original, a resend, or an XOR repair. Lost original numbers apply to each design's original sequence. The two schedules may place the same original in different slots. Deadline zero is a legitimate setting, as is an empty loss list.
+
+1. Start with one drop, original 1. On paper, mark the next arrival, the request and the replacement on the retransmission time axis. Mark the first repair slot on the XOR axis. Run the trace to check your predictions.
+2. Next drop originals 1 and 2. Predict why XOR fails with groups of ten. Use groups of five and drop originals 5 and 6 instead. Count the missing packets per group. The timing of the boundary changes the result.
+3. Sweep several group sizes with an empty loss list and then several patterns of drops. Compare the absolute **count** delivered on time, since all runs had the same slot budget. Record a pair of settings where the scheme that repairs one pattern loses in the other.
+4. If you use an LLM to implement a second XOR repair, give it your proposed grouping rules. First ask it to show what the receiver knows after each slot and check the existing behavior against your predictions. Then have it enumerate pairs of lost originals. Describe one counterexample to a claim your grouping rules suggested, or give a proof if the search found none.
+
+The model assumes that packets which survive arrive in order with fixed forward delay, and that requests, repair packets, and retransmissions survive. A later original reveals a gap. A resend consumes the first available slot at or after one RTT from that discovery and takes priority over a new original. The clock uses expected receive times, so that constant forward delay cancels out of the conversion. There is no timeout for a missing tail or queueing outside the sender's slot schedule. The model intentionally exposes the cost of sharing a fixed slot budget rather than imitating TCP. An incomplete final XOR group receives no extra slots beyond the observation horizon.

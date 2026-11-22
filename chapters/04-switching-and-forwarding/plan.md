@@ -1,0 +1,7 @@
+# Chapter 4 writing plan · Switching and Forwarding
+
+1. Return to the first Ethernet hop in Chapter 3. Start with a shared medium, then ask what a newly plugged-in bridge can infer from its first frame. Trace source learning, unknown-destination flooding, known-unicast forwarding, and same-port filtering. Preserve the class debate about port counts and the bridge bottleneck.
+2. Give Cooville a redundant cable. Follow one flooded frame around the triangle, then assess the class's proposals to limit lifetime, acknowledge delivery, remember frames, and close quiet links. Use the student's two invariants to derive a spanning tree.
+3. Let each switch know only its physical neighbors. Build the root and parent rules from the class discussion and show the resulting traffic path. Revisit the student's first-arrival proposal and the proof supplied in Lecture 6. Separate existence of a tree, shortest hop counts to the root, and a deterministic choice of links.
+4. Unplug a working link and then consider loss of the root. Show why old root information and old MAC entries have to be handled separately. Follow the return traffic and the price of keeping a redundant cable idle. End with the question of choosing a path for each destination.
+5. Adapt the original cycle, shortest-path, and NTP symmetry questions. Record the lecture windows, exercise provenance, and worked checks. Build and inspect the chapter and its diagrams.

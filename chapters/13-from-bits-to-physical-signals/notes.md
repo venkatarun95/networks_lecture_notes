@@ -1,0 +1,10 @@
+# Chapter 13 source notes
+
+- Lecture 15, lines 23011–23060. Deliberately exaggerated clock drift and missed sample. Lines 23264–23354 cover the student's oversampling idea, timing from edges, bit stuffing, and the separate-clock-wire design. Lines 23365–23422 cover Manchester transitions and the question about still needing a clock.
+- Lecture 15, lines 23483–23557. The instructor's misshapen clock waveform, transmission lines, and differential twisted-pair intuition. The chapter distinguishes baud from transitions and identifies propagation speed in the medium.
+- Lecture 15, lines 23675–23787. Four voltage levels, diminishing gains, noise and a qualitative capacity discussion. The chapter supplies the precise Gaussian-channel formula from Shannon §24 and avoids the transcript's uncertainty about constants or voltage versus power.
+- Lecture 15, lines 24036–24203. Fourier decomposition, modulation spreads energy, and the question about fitting signals within a band. The exact two-tone identity is new. The lecture's question was posed aloud after mention of a planned InstaPoll. The chapter does not attribute an actual poll result.
+- Lecture 15, lines 24465–24475 and 24635–24778. Multiple wavelengths in fiber, geostationary coverage and low-orbit trade-offs, latency-sensitive trading messages, and the student question about intersatellite links. The chapter uses explicit geometry and model rates in place of operator-dependent performance claims.
+- Lecture 16, lines 24808–24933. Shared receivers, simultaneous speakers, separating signals by frequency or time.
+- Final 2024, Q2, p. 1. Spectrum license widths. Quiz 3 2025, Q1, p. 1. LEO centralization trade-offs. Quiz 2 2024, p. 3. Satellite spectrum rights and terrestrial coexistence. Original pages reviewed as PNGs. The chapter adds quantitative path lengths and capacities and turns coexistence into a measurement task.
+- New material. Six-one drift trace, bit-stuffing counterexample, two-tone spectrum figure, capacity arithmetic, and the signal lab. The lab isolates ideal clock mismatch from bounded voltage perturbations. It does not model clock recovery circuits or Gaussian capacity.

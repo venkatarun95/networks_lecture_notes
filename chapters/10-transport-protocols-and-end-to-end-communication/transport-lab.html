@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transport lab</title>
+<style>
+body { font: 1rem/1.55 system-ui, sans-serif; color: #1d2938; background: #f6f8fb; margin: 0; }
+main { max-width: 48rem; margin: auto; padding: 2rem 1rem 4rem; }
+form { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1rem; background: #e7eff7; border-radius: .6rem; align-items: end; }
+label { display: grid; gap: .3rem; } select, button { font: inherit; padding: .35rem; }
+button { background: #254f68; border: 1px solid #254f68; color: white; border-radius: .25rem; }
+output { display: block; margin: 1rem 0; font-weight: 650; }
+table { border-collapse: collapse; width: 100%; } caption { text-align: left; font-weight: 650; }
+th, td { text-align: left; border-block-end: 1px solid #d6dfe8; padding: .45rem; }
+</style>
+</head>
+<body><main>
+<h1>When should you retransmit?</h1>
+<p>Predict when the receiver can read all five segments. Then run the same path with a different sender rule.</p>
+<form>
+<label>Path <select name="scenario"><option>early loss</option><option>tail loss</option><option>detour</option></select></label>
+<label>Duplicate ACKs <select name="threshold"><option value="0">Disabled</option><option>1</option><option>2</option><option selected>3</option><option>4</option></select></label>
+<label>Timer in ticks <select name="timeout"><option value="0">Disabled</option><option>8</option><option selected>12</option><option>18</option></select></label>
+<button>Run trace</button>
+</form>
+<output aria-live="polite"></output>
+<table><caption>Packet and ACK events</caption><thead><tr><th scope="col">Tick</th><th scope="col">Event</th></tr></thead><tbody></tbody></table>
+</main>
+<script defer src="transport-lab.js"></script>
+</body></html>

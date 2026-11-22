@@ -12,11 +12,42 @@ function escapeHTML(text) {
   return text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
 
-await mkdir(output, { recursive: true });
-const entries = await readdir(chapters, { withFileTypes: true });
-const chapterDirectories = entries.filter(entry => entry.isDirectory());
+function page(title, content, scripts = '') {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHTML(title)}</title>
+  <style>${stylesheet}</style>
+</head>
+<body>
+  <main>${content}</main>
+${scripts}</body>
+</html>
+`;
+}
 
-for (const entry of chapterDirectories.sort((a, b) => a.name.localeCompare(b.name))) {
+function chapterLink(chapter, direction = '') {
+  const label = direction ? `${direction} · ${chapter.title}` : chapter.title;
+  return `<a href="${encodeURIComponent(chapter.name)}.html">${escapeHTML(label)}</a>`;
+}
+
+await mkdir(output, { recursive: true });
+const plan = await readFile(join(project, 'plan.md'), 'utf8');
+const parts = new Map();
+let currentPart;
+for (const line of plan.split('\n')) {
+  const part = /^# \*\*(Part [IVX]+ — .+?)\*\*/.exec(line);
+  if (part) currentPart = part[1];
+  const chapter = /^## \*\*Chapter (\d+)\./.exec(line);
+  if (chapter && currentPart) parts.set(Number(chapter[1]), currentPart);
+}
+
+const entries = await readdir(chapters, { withFileTypes: true });
+const manuscripts = [];
+for (const entry of entries.filter(entry => entry.isDirectory()).sort((a, b) =>
+  a.name.localeCompare(b.name, 'en', { numeric: true }))) {
   const source = join(chapters, entry.name, 'chapter.md');
   let markdown;
   try {
@@ -25,11 +56,15 @@ for (const entry of chapterDirectories.sort((a, b) => a.name.localeCompare(b.nam
     if (error.code === 'ENOENT') continue;
     throw error;
   }
-
-  const destination = join(output, `${entry.name}.html`);
-  const sourceUrl = pathToFileURL(source);
   const heading = marked.lexer(markdown).find(token => token.type === 'heading' && token.depth === 1);
   const title = heading?.text ?? entry.name;
+  manuscripts.push({ name: entry.name, source, markdown, title, part: parts.get(parseInt(entry.name, 10)) });
+}
+
+for (const [index, chapter] of manuscripts.entries()) {
+  const { name, source, markdown, title, part } = chapter;
+  const destination = join(output, `${name}.html`);
+  const sourceUrl = pathToFileURL(source);
   const body = await marked.parse(markdown, {
     async: true,
     async walkTokens(token) {
@@ -53,30 +88,44 @@ for (const entry of chapterDirectories.sort((a, b) => a.name.localeCompare(b.nam
   });
 
   let scripts = '';
-  if (entry.name === '01-what-should-a-network-do') {
+  if (name === '01-what-should-a-network-do') {
     const [chapterScript, wasm] = await Promise.all([
-      readFile(join(chapters, entry.name, 'chapter.js'), 'utf8'),
+      readFile(join(chapters, name, 'chapter.js'), 'utf8'),
       readFile(join(project, 'tools/chapter-link-wasm/chapter_link_wasm.wasm')),
     ]);
     scripts = `  <script type="application/octet-stream" id="chapter-link-wasm">${wasm.toString('base64')}</script>
   <script>${chapterScript.replace(/<\/script/gi, '<\\/script')}</script>\n`;
   }
 
-  await writeFile(destination, `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHTML(title)}</title>
-  <style>${stylesheet}</style>
-</head>
-<body>
-  <main>
-    <article>
-${body}    </article>
-  </main>
-${scripts}</body>
-</html>
-`);
+  const contents = '<a href="index.html">Contents</a>';
+  const previous = manuscripts[index - 1];
+  const next = manuscripts[index + 1];
+  const navigation = [
+    previous && chapterLink(previous, 'Previous'),
+    contents,
+    next && chapterLink(next, 'Next'),
+  ].filter(Boolean).join('\n');
+
+  await writeFile(destination, page(title, `
+    <nav class="book-nav" aria-label="Book location">${contents}${part ? `<span>${escapeHTML(part)}</span>` : ''}</nav>
+    <article>${body}</article>
+    <nav class="book-nav chapter-turn" aria-label="Chapter navigation">${navigation}</nav>
+  `, scripts));
   console.log(`Built ${relative(project, destination)}`);
 }
+
+const groups = new Map();
+for (const chapter of manuscripts) {
+  const part = chapter.part ?? 'Chapters';
+  if (!groups.has(part)) groups.set(part, []);
+  groups.get(part).push(chapter);
+}
+const contents = Array.from(groups, ([part, items]) => `
+  <section><h2>${escapeHTML(part)}</h2>
+    <ul>${items.map(chapter => `<li>${chapterLink(chapter)}</li>`).join('\n')}</ul>
+  </section>`).join('\n');
+await writeFile(join(output, 'index.html'), page('Computer Networks Through Design and Reasoning', `
+  <h1>Computer Networks Through Design and Reasoning</h1>
+  <nav class="book-contents" aria-label="Table of contents">${contents}</nav>
+`));
+console.log('Built build/index.html');

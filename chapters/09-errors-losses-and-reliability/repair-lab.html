@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Repair timing lab</title>
+  <style>
+    html {color-scheme: light; background: #f6f8fa; color: #162436; font: 1rem/1.5 system-ui, sans-serif}
+    body {max-width: 58rem; margin: 2rem auto; padding: 0 1rem}
+    form {display: flex; flex-wrap: wrap; align-items: end; gap: .75rem}
+    label {display: grid; gap: .2rem}
+    input, button {font: inherit; padding: .3rem .6rem}
+    input[type=number] {width: 6rem}
+    button {background: #14354d; color: white; border: 2px solid #14354d; border-radius: .25rem}
+    a {color: #215881}
+    table {border-collapse: collapse; width: 100%; text-align: left; font-variant-numeric: tabular-nums}
+    th, td {padding: .4rem; border-bottom: 1px solid #c6d0d9}
+    .table-scroll {overflow-x:auto}
+    caption {text-align: left; font-weight: 700; padding: 1rem 0 .3rem}
+    h1 {margin-bottom: .4rem}
+  </style>
+  <script src="repair-lab.js" defer></script>
+</head>
+<body>
+  <main>
+    <a href="../../build/09-errors-losses-and-reliability.html">Chapter 9</a>
+    <h1>Repair timing lab</h1>
+    <p>Compare on-time delivery over 66 wire slots, 2 ms apart. Number originals in each design from 1. Enter comma-separated original numbers to drop in both runs.</p>
+    <form id="controls">
+      <label>Originals per XOR group <input id="group" type="number" min="1" max="20" value="10" required></label>
+      <label>Round-trip delay (ms) <input id="rtt" type="number" min="0" max="2000" value="100" required></label>
+      <label>Deadline after expected arrival (ms) <input id="deadline" type="number" min="0" max="2000" value="25" required></label>
+      <label>Dropped original numbers <input id="losses" value="1" size="14" pattern="\s*([0-9]+\s*(,\s*[0-9]+\s*)*)?"></label>
+      <button>Run trace</button>
+    </form>
+    <p id="summary" role="status"></p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Packet trace">
+      <table>
+        <caption>Original packet outcomes</caption>
+        <thead><tr><th scope="col">Design</th><th scope="col">Original</th><th scope="col">Expected (ms)</th><th scope="col">Recovered (ms)</th><th scope="col">Outcome</th></tr></thead>
+        <tbody id="trace"></tbody>
+      </table>
+    </div>
+    <p>Both designs share the slot budget. A resend consumes a slot when the request can first use it. A waiting resend takes priority over new data. XOR repair uses slots on a fixed schedule, and repair packets always arrive. The last XOR group may run out of slots before its repair is sent.</p>
+  </main>
+</body>
+</html>
