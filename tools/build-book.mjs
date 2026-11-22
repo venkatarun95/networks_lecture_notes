@@ -126,6 +126,8 @@ const contents = Array.from(groups, ([part, items]) => `
   </section>`).join('\n');
 await writeFile(join(output, 'index.html'), page('Computer Networks Through Design and Reasoning', `
   <h1>Computer Networks Through Design and Reasoning</h1>
+  <h2 style="text-align: right;">&mdash; Venkat Arun</h2>
+  <p><b>How the notes were generated:</b> This book was written by an LLM based on lecture transcripts, quizzes and assignments in my CS 356 class. It therefore contains many discussions and contributions from students in the fall 2026 offering of the course. While I think the notes are usable, do remember that the writing was largely autonomous with only high-level planning and prompting by me.</p>
   <nav class="book-contents" aria-label="Table of contents">${contents}</nav>
 `));
 console.log('Built build/index.html');
