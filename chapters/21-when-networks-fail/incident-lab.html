@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident investigation lab</title>
+<style>
+body { font:1rem/1.55 system-ui,sans-serif; color:#1d2938; background:#f6f8fb; margin:0; }
+main { max-width:54rem; margin:auto; padding:2rem 1rem 4rem; }
+details, form { background:#e7eff7; border-radius:.5rem; padding:.75rem; margin:.65rem 0; }
+summary { cursor:pointer; font-weight:650; }
+select, button { font:inherit; } output { display:block; margin:1rem 0; font-weight:650; }
+.trace { overflow-x:auto; } table { border-collapse:collapse; width:100%; }
+caption { text-align:left; font-weight:650; }
+th, td { text-align:left; padding:.4rem; border-block-end:1px solid #d6dfe8; }
+</style>
+</head>
+<body><main>
+<h1>Why didn't the service recover?</h1>
+<p>One access network reports missed deadlines. More networks report trouble in the next few minutes. The operations screen displays a link-down event. Choose a measurement after writing what you'd expect to see.</p>
+<details>
+<summary>Compare physical counters and routing events</summary>
+<p>Both ends still report physical carrier. The transmit queue reports rejected hellos immediately before the adjacency-down event. Some data crosses while the neighbor misses hellos. These records cover that link, not every path to the service.</p>
+</details>
+<details>
+<summary>Compare two access networks</summary>
+<p>Early failures concentrate in the access network whose route changes. Later, clients in both networks resolve the same address, complete TLS, and receive HTML from the front end. Both miss the deadline for the departures API.</p>
+</details>
+<details>
+<summary>Ask what the health check exercises</summary>
+<p>The front end replies to its own health check without calling departures. It can serve the page shell during the incident. The departures backend records work whose client-side deadlines have already passed.</p>
+</details>
+<details>
+<summary>Compare unique and repeated requests</summary>
+<p>The service groups attempts by request ID. Fresh demand holds at 70 per interval. Repeated attempts rise when capacity falls and remain high after the route recovers. At the restored capacity of 100, just 10 fresh requests meet their deadlines.</p>
+</details>
+<details>
+<summary>Compare measurements before and after a retry budget</summary>
+<p>Predict which budget still lets all 70 fresh attempts finish in the first interval it applies. Then try several values. The route restores capacity at interval 4. The selected retry budget starts in interval 6.</p>
+<form>
+<label>Retry budget per interval <select name="budget"><option selected>90</option><option>70</option><option>60</option><option>45</option><option>30</option><option>0</option></select></label>
+<button>Run comparison</button>
+</form>
+<output aria-live="polite"></output>
+<div class="trace"><table><caption>Simulated service trace</caption>
+<thead><tr><th scope="col">Interval</th><th scope="col">Capacity</th><th scope="col">Fresh attempts</th><th scope="col">Retry attempts offered</th><th scope="col">Fresh responses in time</th></tr></thead>
+<tbody></tbody></table></div>
+</details>
+</main><script defer src="incident-lab.js"></script></body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One-time pad lab</title>
+<style>
+body { font: 1rem/1.55 system-ui,sans-serif; color:#1d2938; background:#f6f8fb; margin:0; }
+main { max-width:45rem; margin:auto; padding:2rem 1rem 4rem; }
+label { display:inline-flex; gap:.5rem; padding:.5rem; background:#e7eff7; margin-right:.5rem; }
+select { font:inherit; } table { width:100%; border-collapse:collapse; margin-top:1rem; }
+th, td { text-align:left; padding:.4rem; border-block-end:1px solid #d6dfe8; }
+</style>
+</head>
+<body><main>
+<h1>What does this ciphertext tell you?</h1>
+<p>For each three-bit message, find the one pad that yields the observed ciphertext. Then compare how likely each pad was before the message was sent.</p>
+<label>Observed ciphertext <select id="ciphertext"></select></label>
+<label>Pad distribution <select id="policy"><option value="uniform">Uniform</option><option value="biased">First bit favors 0</option></select></label>
+<table aria-label="Ciphertext likelihood for each candidate message">
+<thead><tr><th scope="col">Candidate message</th><th scope="col">Required pad</th><th scope="col">Probability of this ciphertext given candidate</th></tr></thead>
+<tbody></tbody>
+</table>
+</main><script defer src="pad-lab.js"></script></body>
+</html>

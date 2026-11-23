@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { access, copyFile, cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { marked } from './vendor/marked/marked.mjs';
@@ -34,6 +34,17 @@ function chapterLink(chapter, direction = '') {
 }
 
 await mkdir(output, { recursive: true });
+const assets = join(project, 'assets');
+const publishedFiles = new Map();
+await mkdir(join(output, 'assets'), { recursive: true });
+for (const entry of await readdir(assets, { withFileTypes: true })) {
+  if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
+    const source = join(assets, entry.name);
+    const target = join(output, 'assets', entry.name);
+    await copyFile(source, target);
+    publishedFiles.set(source, target);
+  }
+}
 const plan = await readFile(join(project, 'plan.md'), 'utf8');
 const parts = new Map();
 let currentPart;
@@ -61,6 +72,18 @@ for (const entry of entries.filter(entry => entry.isDirectory()).sort((a, b) =>
   manuscripts.push({ name: entry.name, source, markdown, title, part: parts.get(parseInt(entry.name, 10)) });
 }
 
+const figureDirectories = new Map();
+for (const { name, source } of manuscripts) {
+  const directory = dirname(source);
+  const entries = await readdir(directory, { withFileTypes: true });
+  if (entries.some(entry => entry.name === 'figures' && entry.isDirectory())) {
+    const figures = join(directory, 'figures');
+    const target = join(output, 'figures', name);
+    await cp(figures, target, { recursive: true });
+    figureDirectories.set(figures + sep, target);
+  }
+}
+
 for (const [index, chapter] of manuscripts.entries()) {
   const { name, source, markdown, title, part } = chapter;
   const destination = join(output, `${name}.html`);
@@ -82,7 +105,14 @@ for (const [index, chapter] of manuscripts.entries()) {
           cause: error,
         });
       }
-      const path = relative(dirname(destination), filename).split(sep).map(encodeURIComponent).join('/');
+      let published = publishedFiles.get(filename) ?? filename;
+      for (const [prefix, directory] of figureDirectories) {
+        if (filename.startsWith(prefix)) {
+          published = join(directory, filename.slice(prefix.length));
+          break;
+        }
+      }
+      const path = relative(dirname(destination), published).split(sep).map(encodeURIComponent).join('/');
       token.href = `${path}${target.search}${target.hash}`;
     },
   });

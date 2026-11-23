@@ -13,4 +13,4 @@ Adapt the [JavaScript model](route-lab.js) to a ring of \(n\) routing ASes, each
 
 Can a ring have a fixed point and still repeat from a different initial assignment under a repeating order that activates every AS? Check multiple initial states and exhibit a complete trace for any counterexample. Distinguish the conditions you have exhaustively checked from those you sampled.
 
-The three-AS preferences come from Lecture 8 of the [course transcript](../../assets/f26-subtitles.txt), lines 12761–12839. The scheduler, sweep, and ring extension are lab additions. Each activation reads the neighbor’s current selection directly, while the other ASes retain their previous selections until activated.
+The lab uses the three-AS preferences from Chapter 7. The scheduler, sweep, and ring extension are lab additions. Each activation reads the neighbor’s current selection directly, while the other ASes retain their previous selections until activated.

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edge cache lab</title>
+  <style>
+    html {color-scheme:light;background:#f6f8fa;color:#162436;font:1rem/1.5 system-ui,sans-serif}
+    body {max-width:58rem;margin:2rem auto;padding:0 1rem}
+    form {display:flex;flex-wrap:wrap;align-items:end;gap:.75rem}
+    label {display:grid;gap:.2rem}
+    input,button {font:inherit;padding:.35rem .55rem}
+    input[type=number] {width:7rem}
+    #sequence {width:min(24rem,80vw)}
+    a {color:#225881}
+    button {color:white;background:#15384e;border:2px solid #15384e;border-radius:.25rem}
+    .table-scroll {overflow-x:auto}
+    table {border-collapse:collapse;width:100%;text-align:left}
+    caption {text-align:left;font-weight:bold;padding:.75rem 0 .35rem}
+    th,td {padding:.45rem;border-bottom:1px solid #c6d0d9}
+  </style>
+  <script src="edge-lab.js" defer></script>
+</head>
+<body>
+  <main>
+    <a href="../../build/20-content-delivery-and-the-edge.html">Chapter 20</a>
+    <h1>Edge cache lab</h1>
+    <p>One viewer request arrives per step. The icon i takes 1 MB. Video segments a, b, and c take 8 MB each. On a miss, the edge fetches the complete object from upstream.</p>
+    <form id="settings">
+      <label>Request order <input id="sequence" value="i a i b i c i" maxlength="100" pattern="\s*[iabc](\s*[iabc])*\s*" required></label>
+      <label>Capacity (MB) <input id="capacity" value="8" type="number" min="0" max="25" required></label>
+      <label>Fresh for (steps) <input id="freshness" value="20" type="number" min="0" max="100" required></label>
+      <button>Run trace</button>
+    </form>
+    <p id="summary" role="status"></p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Cache trace">
+      <table>
+        <caption>Cache trace</caption>
+        <thead><tr><th scope="col">Request</th><th scope="col">Object</th><th scope="col">Admit at first request</th><th scope="col">Admit from second request</th></tr></thead>
+        <tbody id="trace"></tbody>
+      </table>
+    </div>
+    <p>Both caches evict least recently used objects. A copy expires once its age reaches the freshness limit, even if it was recently used. An object larger than capacity bypasses storage.</p>
+  </main>
+</body>
+</html>

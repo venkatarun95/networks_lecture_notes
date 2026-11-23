@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Congestion-window lab</title>
+  <style>
+    body { margin: 0; color: #173334; background: #fff; font: 1rem/1.5 system-ui, sans-serif; }
+    main { width: min(63rem, calc(100% - 2rem)); margin: 2rem auto 4rem; }
+    p { max-width: 70ch; }
+    form { display: flex; flex-wrap: wrap; align-items: end; gap: .85rem; }
+    label { display: grid; gap: .25rem; }
+    input, select, button { font: inherit; color: inherit; padding: .35rem .55rem; }
+    input { width: 6rem; }
+    button { background: #12675f; color: white; border: 1px solid #12675f; border-radius: .3rem; cursor: pointer; }
+    a { color: #12675f; }
+    svg { width: 100%; height: auto; background: #f3f8f6; border-radius: .5rem; }
+    .trace { overflow-x: auto; }
+    table { min-width: 46rem; width: 100%; border-collapse: collapse; }
+    th, td { text-align: right; padding: .35rem .65rem; border-bottom: 1px solid #cad8d6; }
+    th { background: #edf5f2; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Congestion-window lab</h1>
+  <p>Both senders have data and share a 100-packet pipe. Their controller updates once per round and both see overload when their combined window exceeds the pipe plus the buffer. Predict the first overloaded round before you run each rule.</p>
+  <form id="settings">
+    <label>Controller
+      <select id="algorithm"><option value="aimd">AIMD</option><option value="miad">MIAD</option></select>
+    </label>
+    <label>Window A <input id="initial-a" type="number" min="1" max="300" value="10" required></label>
+    <label>Window B <input id="initial-b" type="number" min="1" max="300" value="20" required></label>
+    <label>Buffer (packets) <input id="buffer" type="number" min="0" max="300" value="100" required></label>
+    <label>Rounds <input id="rounds" type="number" min="2" max="800" value="240" required></label>
+    <button type="submit">Run trace</button>
+  </form>
+  <noscript><p>Enable JavaScript to run the simulation.</p></noscript>
+
+  <section id="results" hidden aria-labelledby="result-heading">
+    <h2 id="result-heading">Windows by round</h2>
+    <p id="summary" role="status"></p>
+    <p>Window A is the solid green line. Window B is the dashed rust line. The gray line at 100 packets is the pipe size.</p>
+    <svg id="chart" viewBox="0 0 760 260" role="img" aria-label="Congestion windows in packets over successive rounds"></svg>
+    <details>
+      <summary>Read the round-by-round values</summary>
+      <div class="trace" role="region" aria-label="Congestion trace" tabindex="0">
+        <table>
+          <thead><tr><th scope="col">Round</th><th scope="col">Window A</th><th scope="col">Window B</th><th scope="col">Total</th><th scope="col">Queue (packets)</th><th scope="col">Link use</th><th scope="col">Overload</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+  <p><a href="lab.md">Experiments and model assumptions</a></p>
+</main>
+<script src="window-model.js"></script>
+<script>
+  "use strict";
+  const byId = id => document.getElementById(id);
+  const number = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
+  const percent = new Intl.NumberFormat("en", { style: "percent" });
+
+  function chartElement(tag, attrs, content = "") {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attrs).forEach(([name, value]) => element.setAttribute(name, value));
+    element.textContent = content;
+    return element;
+  }
+
+  function renderChart(trace, bdp) {
+    const ceiling = Math.ceil(Math.max(bdp, ...trace.map(step => Math.max(...step.windows))) / 20) * 20;
+    const x = round => 58 + round * 680 / (trace.length - 1);
+    const y = window => 218 - window * 194 / ceiling;
+    const elements = [
+      chartElement("path", { d: "M58 24V218H738", fill: "none", stroke: "#345351" }),
+      chartElement("line", { x1: x(0), x2: x(trace.length - 1), y1: y(bdp), y2: y(bdp), stroke: "#788b88" }),
+      chartElement("text", { x: 20, y: 30, fill: "#173334" }, number.format(ceiling)),
+      chartElement("text", { x: 37, y: 223, fill: "#173334" }, "0"),
+      chartElement("text", { x: x(0), y: 244, "text-anchor": "middle" }, "0"),
+      chartElement("text", { x: x(trace.length - 1), y: 244, "text-anchor": "middle" }, trace.length - 1),
+      chartElement("text", { x: 385, y: 244, "text-anchor": "middle" }, "Round"),
+    ];
+    ["#147265", "#a34b2b"].forEach((stroke, sender) => {
+      const points = trace.map(step => `${x(step.round)},${y(step.windows[sender])}`).join(" ");
+      const style = { points, stroke, "stroke-width": 2.5, fill: "none" };
+      if (sender === 1) style["stroke-dasharray"] = "6 3";
+      elements.push(chartElement("polyline", style));
+    });
+    byId("chart").replaceChildren(...elements);
+  }
+
+  function renderTrace(trace) {
+    const rows = trace.map(step => {
+      const row = document.createElement("tr");
+      const values = [step.round, ...step.windows.map(w => number.format(w)), number.format(step.total),
+        number.format(step.queue), percent.format(step.utilization), step.overload ? "Yes" : "No"];
+      values.forEach(value => { row.insertCell().textContent = value; });
+      return row;
+    });
+    byId("rows").replaceChildren(...rows);
+    const overloads = trace.filter(step => step.overload).length;
+    const idle = trace.filter(step => step.utilization < 1).length;
+    const gap = Math.max(...trace.map(step => Math.abs(step.windows[0] - step.windows[1])));
+    byId("summary").textContent = `${overloads} overload rounds · ${idle} rounds below full utilization · largest window gap ${number.format(gap)} packets`;
+  }
+
+  byId("settings").addEventListener("submit", event => {
+    event.preventDefault();
+    const bdp = 100;
+    const trace = simulateWindows({
+      initial: [byId("initial-a").valueAsNumber, byId("initial-b").valueAsNumber],
+      bdp,
+      buffer: byId("buffer").valueAsNumber,
+      rounds: byId("rounds").valueAsNumber,
+      update: windowRules[byId("algorithm").value],
+    });
+    renderChart(trace, bdp);
+    renderTrace(trace);
+    byId("results").hidden = false;
+  });
+  byId("settings").requestSubmit();
+</script>
+</body>
+</html>
